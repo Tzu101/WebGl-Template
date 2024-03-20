@@ -1,3 +1,20 @@
+export class Vector3 {
+    static normalize(vector) {
+        const length = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1] + vector[2] * vector[2]);
+        if (length === 0) {
+            return vector;
+        }
+        return [vector[0] / length, vector[1] / length, vector[2] / length];
+    }
+    static rotateY(vector, angle_rad) {
+        const angle_sin = Math.sin(angle_rad);
+        const angle_cos = Math.cos(angle_rad);
+        const x = vector[0];
+        const y = vector[1];
+        const z = vector[2];
+        return [x * angle_cos + z * angle_sin, y, -x * angle_sin + z * angle_cos];
+    }
+}
 export class Quaternion {
     static normalize(quaternion) {
         const size = Math.sqrt(quaternion[0] * quaternion[0] +

@@ -163,7 +163,7 @@ export class Texture {
         }
         this.texture = new_texture;
         webgl.bindTexture(webgl.TEXTURE_2D, this.texture);
-        webgl.pixelStorei(webgl.UNPACK_FLIP_Y_WEBGL, true);
+        //webgl.pixelStorei(webgl.UNPACK_FLIP_Y_WEBGL, true);
         webgl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_WRAP_S, webgl.CLAMP_TO_EDGE);
         webgl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_WRAP_T, webgl.CLAMP_TO_EDGE);
         webgl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_MIN_FILTER, webgl.NEAREST);
@@ -171,38 +171,40 @@ export class Texture {
         webgl.texImage2D(webgl.TEXTURE_2D, 0, webgl.RGBA, webgl.RGBA, webgl.UNSIGNED_BYTE, image);
     }
     bind(slot) {
-        webgl.bindTexture(webgl.TEXTURE_2D, this.texture);
         webgl.activeTexture(webgl.TEXTURE0 + slot);
+        webgl.bindTexture(webgl.TEXTURE_2D, this.texture);
+    }
+}
+export class Material {
+    constructor(shader, textures) {
+        this.shader = shader;
+        this.textures = textures;
+        this.shader.bind();
+        for (let t = 0; t < this.textures.length; t++) {
+            this.shader.setUniform1i(`textures[${t}]`, t);
+        }
+    }
+    bind() {
+        this.shader.bind();
+        for (let t = 0; t < this.textures.length; t++) {
+            this.textures[t].bind(t);
+        }
     }
 }
 export class Model {
-    constructor(data, data_layout, indices, shader, textures) {
+    constructor(data, data_layout, indices, material) {
         const vertex_buffer = new VertexBuffer();
         vertex_buffer.bufferData(data);
         this.vertex_array = new VertexArray(data_layout);
         this.vertex_array.applyToBuffer(vertex_buffer);
         this.index_buffer = new IndexBuffer();
         this.index_buffer.bufferData(indices);
-        this.shader = shader;
-        if (textures) {
-            this.textures = textures;
-            this.shader.bind();
-            for (let t = 0; t < this.textures.length; t++) {
-                this.shader.setUniform1i(`textures`, t);
-                this.textures[t].bind(t);
-            }
-        }
-        else {
-            this.textures = [];
-        }
+        this.material = material;
     }
     bind() {
         this.vertex_array.bind();
         this.index_buffer.bind();
-        this.shader.bind();
-        for (let t = 0; t < this.textures.length; t++) {
-            this.textures[t].bind(0);
-        }
+        this.material.bind();
     }
     draw() {
         webgl.drawElements(webgl.TRIANGLES, this.index_buffer.size, webgl.UNSIGNED_SHORT, 0);

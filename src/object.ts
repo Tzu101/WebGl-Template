@@ -248,7 +248,7 @@ export class Texture {
     this.texture = new_texture;
 
     webgl.bindTexture(webgl.TEXTURE_2D, this.texture);
-    webgl.pixelStorei(webgl.UNPACK_FLIP_Y_WEBGL, true);
+    //webgl.pixelStorei(webgl.UNPACK_FLIP_Y_WEBGL, true);
     webgl.texParameteri(
       webgl.TEXTURE_2D,
       webgl.TEXTURE_WRAP_S,
@@ -281,23 +281,43 @@ export class Texture {
   }
 
   bind(slot: number) {
-    webgl.bindTexture(webgl.TEXTURE_2D, this.texture);
     webgl.activeTexture(webgl.TEXTURE0 + slot);
+    webgl.bindTexture(webgl.TEXTURE_2D, this.texture);
+  }
+}
+
+export class Material {
+  private shader: Shader;
+  private textures: Texture[];
+
+  constructor(shader: Shader, textures: Texture[]) {
+    this.shader = shader;
+    this.textures = textures;
+
+    this.shader.bind();
+    for (let t = 0; t < this.textures.length; t++) {
+      this.shader.setUniform1i(`textures[${t}]`, t);
+    }
+  }
+
+  bind() {
+    this.shader.bind();
+    for (let t = 0; t < this.textures.length; t++) {
+      this.textures[t].bind(t);
+    }
   }
 }
 
 export class Model {
   private vertex_array: VertexArray;
   private index_buffer: IndexBuffer;
-  private shader: Shader;
-  private textures: Texture[];
+  private material: Material;
 
   constructor(
     data: number[],
     data_layout: number[],
     indices: number[],
-    shader: Shader,
-    textures?: Texture[]
+    material: Material
   ) {
     const vertex_buffer = new VertexBuffer();
     vertex_buffer.bufferData(data);
@@ -308,28 +328,13 @@ export class Model {
     this.index_buffer = new IndexBuffer();
     this.index_buffer.bufferData(indices);
 
-    this.shader = shader;
-
-    if (textures) {
-      this.textures = textures;
-
-      this.shader.bind();
-      for (let t = 0; t < this.textures.length; t++) {
-        this.shader.setUniform1i(`textures`, t);
-        this.textures[t].bind(t);
-      }
-    } else {
-      this.textures = [];
-    }
+    this.material = material;
   }
 
   bind() {
     this.vertex_array.bind();
     this.index_buffer.bind();
-    this.shader.bind();
-    for (let t = 0; t < this.textures.length; t++) {
-      this.textures[t].bind(0);
-    }
+    this.material.bind();
   }
 
   draw() {

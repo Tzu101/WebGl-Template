@@ -1,15 +1,8 @@
 import { canvas, canvasInit } from "./canvas.js";
-import {
-  webgl,
-  webglInit,
-  IndexBuffer,
-  VertexBuffer,
-  VertexArray,
-  Shader,
-} from "./webgl.js";
+import { webgl, webglInit, Shader } from "./webgl.js";
 import { loadText, loadImage } from "./resource.js";
-import { Node, Camera, Texture, Model } from "./object.js";
-import { Matrix4 } from "./math.js";
+import { Node, Camera, Texture, Material, Model } from "./object.js";
+import { MovementControler } from "./controler.js";
 
 async function appInit() {
   if (!canvasInit()) {
@@ -97,18 +90,13 @@ async function appInit() {
     fragment_texture_source,
   ]);
   const shader_square = new Shader(shader_source[0], shader_source[2]);
-  const shader_cube = new Shader(shader_source[0], shader_source[1]);
 
   const texture0 = new Texture(await loadImage("./res/textures/clouds.jpg"));
-  const texture1 = new Texture(await loadImage("./res/textures/grass.jpg"));
-  const texture2 = new Texture(await loadImage("./res/textures/stars.jpeg"));
+  const texture1 = new Texture(await loadImage("./res/textures/stars.jpeg"));
 
-  const square = new Model(data_square, [2, 3], indices_square, shader_square, [
-    texture0,
-    texture1,
-    texture2,
-  ]);
-  const cube = new Model(data_cube, [3, 3], indices_cube, shader_cube);
+  const material = new Material(shader_square, [texture0, texture1]);
+
+  const square = new Model(data_square, [2, 3], indices_square, material);
 
   const camera = new Camera(
     0.87,
@@ -116,39 +104,21 @@ async function appInit() {
     1,
     100000
   );
-  camera.updateModelMatrix();
-
-  shader_cube.bind();
-  shader_cube.setUniformMatrix4fv(
-    "proj_mat",
-    new Float32Array(camera.camera_matrix)
-  );
-
-  shader_square.bind();
-  shader_square.setUniformMatrix4fv(
-    "proj_mat",
-    new Float32Array(camera.camera_matrix)
-  );
-
-  const node_cube = new Node();
-  node_cube.transform.translation = [0, 0, 50];
-  node_cube.transform.scale = [0.1, 0.9, 0.2];
 
   const node_square = new Node();
   node_square.transform.translation = [0, 0, -300];
   node_square.transform.scale = [200, 200, 200];
 
-  node_square.addChild(node_cube);
+  const controler = new MovementControler(camera);
 
   function loop() {
     webgl.clearColor(0.9, 0.9, 1.0, 1.0);
     webgl.clear(webgl.COLOR_BUFFER_BIT | webgl.DEPTH_BUFFER_BIT);
 
-    camera.transform.translation[2] += 0.125;
+    controler.update();
     camera.updateModelMatrix();
 
-    node_cube.transform.rotateY(0.01);
-    node_square.transform.rotateZ(0.001);
+    //node_square.transform.rotateZ(0.001);
     node_square.updateModelMatrix();
 
     square.bind();
@@ -161,17 +131,6 @@ async function appInit() {
       new Float32Array(node_square.model_matrix)
     );
     square.draw();
-
-    cube.bind();
-    shader_cube.setUniformMatrix4fv(
-      "proj_mat",
-      new Float32Array(camera.camera_matrix)
-    );
-    shader_cube.setUniformMatrix4fv(
-      "model_mat",
-      new Float32Array(node_cube.model_matrix)
-    );
-    cube.draw();
 
     requestAnimationFrame(loop);
   }
