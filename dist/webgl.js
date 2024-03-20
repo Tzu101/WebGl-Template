@@ -135,8 +135,12 @@ export class Shader {
         }
         return uniform_location;
     }
-    setUniformMatrix4fv(name, data) {
+    setUniform1i(name, integer) {
         const uniform_location = this.getUniformLocation(name);
-        webgl.uniformMatrix4fv(uniform_location, false, data);
+        webgl.uniform1i(uniform_location, integer);
+    }
+    setUniformMatrix4fv(name, matrix) {
+        const uniform_location = this.getUniformLocation(name);
+        webgl.uniformMatrix4fv(uniform_location, false, matrix);
     }
 }

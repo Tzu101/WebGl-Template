@@ -166,16 +166,68 @@ export class Camera extends Node {
   }
 }
 
+export class Texture {
+  private texture: WebGLTexture;
+
+  constructor(image: HTMLImageElement) {
+    const new_texture = webgl.createTexture();
+    if (!new_texture) {
+      console.error("Couldnt init texture!");
+      return;
+    }
+    this.texture = new_texture;
+
+    webgl.bindTexture(webgl.TEXTURE_2D, this.texture);
+    webgl.pixelStorei(webgl.UNPACK_FLIP_Y_WEBGL, true);
+    webgl.texParameteri(
+      webgl.TEXTURE_2D,
+      webgl.TEXTURE_WRAP_S,
+      webgl.CLAMP_TO_EDGE
+    );
+    webgl.texParameteri(
+      webgl.TEXTURE_2D,
+      webgl.TEXTURE_WRAP_T,
+      webgl.CLAMP_TO_EDGE
+    );
+    webgl.texParameteri(
+      webgl.TEXTURE_2D,
+      webgl.TEXTURE_MIN_FILTER,
+      webgl.NEAREST
+    );
+    webgl.texParameteri(
+      webgl.TEXTURE_2D,
+      webgl.TEXTURE_MAG_FILTER,
+      webgl.NEAREST
+    );
+
+    webgl.texImage2D(
+      webgl.TEXTURE_2D,
+      0,
+      webgl.RGBA,
+      webgl.RGBA,
+      webgl.UNSIGNED_BYTE,
+      image
+    );
+  }
+
+  bind(slot: number) {
+    webgl.bindTexture(webgl.TEXTURE_2D, this.texture);
+    webgl.activeTexture(webgl.TEXTURE0 + slot);
+  }
+}
+
 export class Model {
   private vertex_array: VertexArray;
   private index_buffer: IndexBuffer;
   private shader: Shader;
+  private textures: Texture[];
 
   constructor(
     data: number[],
     data_layout: number[],
     indices: number[],
-    shader: Shader
+    shader: Shader,
+    textures?: Texture[]
   ) {
     const vertex_buffer = new VertexBuffer();
     vertex_buffer.bufferData(data);
@@ -187,12 +239,27 @@ export class Model {
     this.index_buffer.bufferData(indices);
 
     this.shader = shader;
+
+    if (textures) {
+      this.textures = textures;
+
+      this.shader.bind();
+      for (let t = 0; t < this.textures.length; t++) {
+        this.shader.setUniform1i(`textures`, t);
+        this.textures[t].bind(t);
+      }
+    } else {
+      this.textures = [];
+    }
   }
 
   bind() {
     this.vertex_array.bind();
     this.index_buffer.bind();
     this.shader.bind();
+    for (let t = 0; t < this.textures.length; t++) {
+      this.textures[t].bind(0);
+    }
   }
 
   draw() {

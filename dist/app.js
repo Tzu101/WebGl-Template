@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { canvas, canvasInit } from "./canvas.js";
 import { webgl, webglInit, Shader, } from "./webgl.js";
 import { loadText, loadImage } from "./resource.js";
-import { Node, Camera, Model } from "./object.js";
+import { Node, Camera, Texture, Model } from "./object.js";
 function appInit() {
     return __awaiter(this, void 0, void 0, function* () {
         if (!canvasInit()) {
@@ -86,32 +86,14 @@ function appInit() {
         ]);
         const shader_square = new Shader(shader_source[0], shader_source[2]);
         const shader_cube = new Shader(shader_source[0], shader_source[1]);
-        const cloudTexture = webgl.createTexture();
-        webgl.activeTexture(webgl.TEXTURE0);
-        webgl.bindTexture(webgl.TEXTURE_2D, cloudTexture);
-        webgl.pixelStorei(webgl.UNPACK_FLIP_Y_WEBGL, true);
-        webgl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_WRAP_S, webgl.CLAMP_TO_EDGE);
-        webgl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_WRAP_T, webgl.CLAMP_TO_EDGE);
-        webgl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_MIN_FILTER, webgl.NEAREST);
-        webgl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_MAG_FILTER, webgl.NEAREST);
-        const texture0 = yield loadImage("./res/textures/clouds.jpg");
-        webgl.texImage2D(webgl.TEXTURE_2D, 0, webgl.RGBA, webgl.RGBA, webgl.UNSIGNED_BYTE, texture0);
-        const grassTexture = webgl.createTexture();
-        webgl.activeTexture(webgl.TEXTURE1);
-        webgl.bindTexture(webgl.TEXTURE_2D, grassTexture);
-        webgl.pixelStorei(webgl.UNPACK_FLIP_Y_WEBGL, true);
-        webgl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_WRAP_S, webgl.CLAMP_TO_EDGE);
-        webgl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_WRAP_T, webgl.CLAMP_TO_EDGE);
-        webgl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_MIN_FILTER, webgl.NEAREST);
-        webgl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_MAG_FILTER, webgl.NEAREST);
-        const texture1 = yield loadImage("./res/textures/grass.jpg");
-        webgl.texImage2D(webgl.TEXTURE_2D, 0, webgl.RGBA, webgl.RGBA, webgl.UNSIGNED_BYTE, texture1);
-        shader_square.bind();
-        const loc0 = webgl.getUniformLocation(shader_square.program, "texture0");
-        webgl.uniform1i(loc0, 0);
-        const loc1 = webgl.getUniformLocation(shader_square.program, "texture1");
-        webgl.uniform1i(loc1, 1);
-        const square = new Model(data_square, [2, 3], indices_square, shader_square);
+        const texture0 = new Texture(yield loadImage("./res/textures/clouds.jpg"));
+        const texture1 = new Texture(yield loadImage("./res/textures/grass.jpg"));
+        const texture2 = new Texture(yield loadImage("./res/textures/stars.jpeg"));
+        const square = new Model(data_square, [2, 3], indices_square, shader_square, [
+            texture0,
+            texture1,
+            texture2,
+        ]);
         const cube = new Model(data_cube, [3, 3], indices_cube, shader_cube);
         const camera = new Camera(0.87, canvas.clientWidth / canvas.clientHeight, 1, 100000);
         camera.updateModelMatrix();
