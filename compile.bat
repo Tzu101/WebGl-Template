@@ -1,0 +1,1 @@
+tsc src/app.ts --outDir ./dist --module ESNext --target es6 -w
