@@ -71,39 +71,110 @@ class Transform {
     );
     this._euler_rotation = Quaternion.toEuler(this._quaternion_rotation);
   }
+
+  static combineTranslations(translation_a: number[], translation_b: number[]) {
+    return [
+      translation_a[0] + translation_b[0],
+      translation_a[1] + translation_b[1],
+      translation_a[2] + translation_b[2],
+    ];
+  }
+
+  static combineQuaternionRotations(
+    rotation_a: number[],
+    rotation_b: number[]
+  ) {
+    return Quaternion.multiply(rotation_a, rotation_b);
+  }
+
+  static combineScales(scale_a: number[], scale_b: number[]) {
+    return [
+      scale_a[0] * scale_b[0],
+      scale_a[1] * scale_b[1],
+      scale_a[2] * scale_b[2],
+    ];
+  }
+
+  static combineTransforms(transform_a: Transform, transform_b: Transform) {
+    const translation = Transform.combineTranslations(
+      transform_a.translation,
+      transform_b.translation
+    );
+    const quaternion_rotation = Transform.combineQuaternionRotations(
+      transform_b.quaternion_rotation,
+      transform_a.quaternion_rotation
+    );
+    const scale = Transform.combineScales(transform_a.scale, transform_b.scale);
+
+    const combined_transform = new Transform();
+    combined_transform.translation = translation;
+    combined_transform.quaternion_rotation = quaternion_rotation;
+    combined_transform.scale = scale;
+
+    return combined_transform;
+  }
 }
 
 export class Node {
-  protected _transform: Transform;
+  private _local_transform: Transform;
+  protected _root_transform: Transform;
   protected _model_matrix: number[];
+  protected children: Node[];
 
   constructor() {
-    this._transform = new Transform();
+    this._local_transform = new Transform();
+    this._root_transform = new Transform();
     this._model_matrix = Matrix4.identity();
+    this.children = [];
   }
 
   get transform() {
-    return this._transform;
+    return this._local_transform;
+  }
+
+  set root_transform(root_transform: Transform) {
+    this._root_transform = root_transform;
+  }
+
+  get global_transform() {
+    return Transform.combineTransforms(
+      this._local_transform,
+      this._root_transform
+    );
+  }
+
+  get model_matrix() {
+    return this._model_matrix;
   }
 
   updateModelMatrix() {
     let new_matrix = Matrix4.identity();
 
-    const translation_matrix = Matrix4.translation(this._transform.translation);
-    const rotation_matrix = Matrix4.rotationFromQuaternion(
-      this._transform.quaternion_rotation
+    const global_transform = this.global_transform;
+
+    const translation_matrix = Matrix4.translation(
+      global_transform.translation
     );
-    const scale_matrix = Matrix4.scaling(this._transform.scale);
+    const rotation_matrix = Matrix4.rotationFromQuaternion(
+      global_transform.quaternion_rotation
+    );
+    const scale_matrix = Matrix4.scaling(global_transform.scale);
 
     new_matrix = Matrix4.multiplay(new_matrix, translation_matrix);
     new_matrix = Matrix4.multiplay(new_matrix, rotation_matrix);
     new_matrix = Matrix4.multiplay(new_matrix, scale_matrix);
 
     this._model_matrix = new_matrix;
+
+    for (const child of this.children) {
+      child.root_transform = global_transform;
+      child.updateModelMatrix();
+    }
   }
 
-  get model_matrix() {
-    return this._model_matrix;
+  addChild(child: Node) {
+    this.children.push(child);
+    child.root_transform = this.global_transform;
   }
 }
 
@@ -172,7 +243,6 @@ export class Texture {
   constructor(image: HTMLImageElement) {
     const new_texture = webgl.createTexture();
     if (!new_texture) {
-      console.error("Couldnt init texture!");
       return;
     }
     this.texture = new_texture;

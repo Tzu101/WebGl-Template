@@ -101,35 +101,29 @@ function appInit() {
         shader_cube.setUniformMatrix4fv("proj_mat", new Float32Array(camera.camera_matrix));
         shader_square.bind();
         shader_square.setUniformMatrix4fv("proj_mat", new Float32Array(camera.camera_matrix));
-        const node_square = new Node();
-        node_square.transform.translation = [0, -50, -300];
-        node_square.transform.scale = [200, 200, 200];
-        node_square.updateModelMatrix();
         const node_cube = new Node();
-        node_cube.transform.translation = [0, 50, -300];
-        node_cube.transform.scale = [20, 200, 10];
+        node_cube.transform.translation = [0, 0, 50];
+        node_cube.transform.scale = [0.1, 0.9, 0.2];
+        const node_square = new Node();
+        node_square.transform.translation = [0, 0, -300];
+        node_square.transform.scale = [200, 200, 200];
+        node_square.addChild(node_cube);
         function loop() {
             webgl.clearColor(0.9, 0.9, 1.0, 1.0);
             webgl.clear(webgl.COLOR_BUFFER_BIT | webgl.DEPTH_BUFFER_BIT);
-            /*camera.transform.translation[2] += 0.5;
-            camera.transform.rotateZ(0.02);
+            camera.transform.translation[2] += 0.125;
             camera.updateModelMatrix();
-            shader.setUniformMatrix4fv(
-              "proj_mat",
-              new Float32Array(camera.camera_matrix)
-            );*/
-            node_cube.transform.rotateX(0.01);
-            node_cube.transform.rotateY(0.005);
-            node_cube.transform.rotateZ(0.0025);
-            node_cube.updateModelMatrix();
+            node_cube.transform.rotateY(0.01);
             node_square.transform.rotateZ(0.001);
             node_square.updateModelMatrix();
-            cube.bind();
-            shader_cube.setUniformMatrix4fv("model_mat", new Float32Array(node_cube.model_matrix));
-            cube.draw();
             square.bind();
+            shader_square.setUniformMatrix4fv("proj_mat", new Float32Array(camera.camera_matrix));
             shader_square.setUniformMatrix4fv("model_mat", new Float32Array(node_square.model_matrix));
             square.draw();
+            cube.bind();
+            shader_cube.setUniformMatrix4fv("proj_mat", new Float32Array(camera.camera_matrix));
+            shader_cube.setUniformMatrix4fv("model_mat", new Float32Array(node_cube.model_matrix));
+            cube.draw();
             requestAnimationFrame(loop);
         }
         requestAnimationFrame(loop);
