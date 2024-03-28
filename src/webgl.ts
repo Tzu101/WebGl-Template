@@ -221,8 +221,18 @@ export class Shader {
     webgl.uniform1i(uniform_location, integer);
   }
 
+  setUniform3f(name: string, float1: number, float2: number, float3: number) {
+    const uniform_location = this.getUniformLocation(name);
+    webgl.uniform3f(uniform_location, float1, float2, float3);
+  }
+
   setUniformMatrix4fv(name: string, matrix: Float32Array) {
     const uniform_location = this.getUniformLocation(name);
     webgl.uniformMatrix4fv(uniform_location, false, matrix);
   }
+
+  static UNIFORM_MODEL_MATRIX = "u_ModelMatrix";
+  static UNIFORM_PROJECTION_MATRIX = "u_ProjectionMatrix";
+  static UNIFORM_AMBIENT_LIGHT = "u_AmbientLight";
+  static UNIFORM_TEXTURES = "u_Textures";
 }

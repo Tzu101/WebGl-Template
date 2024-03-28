@@ -13,13 +13,12 @@ async function appInit() {
     return;
   }
 
-  const scene = new Scene();
+  const scene = new Scene({
+    ambient_light: [0.3, 0, 0.2],
+  });
   await scene.init();
 
   function loop() {
-    webgl.clearColor(1.0, 0.9, 0.8, 1.0);
-    webgl.clear(webgl.COLOR_BUFFER_BIT | webgl.DEPTH_BUFFER_BIT);
-
     scene.update();
     scene.display();
 

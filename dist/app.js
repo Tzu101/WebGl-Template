@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { canvasInit } from "./canvas.js";
-import { webgl, webglInit } from "./webgl.js";
+import { webglInit } from "./webgl.js";
 import { Scene } from "./scene.js";
 function appInit() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -20,11 +20,11 @@ function appInit() {
             console.error("WebGL not supported!");
             return;
         }
-        const scene = new Scene();
+        const scene = new Scene({
+            ambient_light: [0.3, 0, 0.2],
+        });
         yield scene.init();
         function loop() {
-            webgl.clearColor(1.0, 0.9, 0.8, 1.0);
-            webgl.clear(webgl.COLOR_BUFFER_BIT | webgl.DEPTH_BUFFER_BIT);
             scene.update();
             scene.display();
             requestAnimationFrame(loop);

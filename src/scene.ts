@@ -1,20 +1,26 @@
 import { canvas } from "./canvas.js";
-import { Shader } from "./webgl.js";
+import { webgl, Shader } from "./webgl.js";
 import { loadText, loadModel, loadImage } from "./resource.js";
 import { Node, Camera, Texture, Material, Model } from "./object.js";
 import { RotationControler, MovementControler } from "./controler.js";
 
 // TODO: Define background, lights, fog, skybox
-export type Environment = {};
+export type Environment = {
+  background_color: [number, number, number];
+  ambient_light: [number, number, number];
+};
 
 export class Scene extends Node {
-  private camera: Camera;
+  public camera: Camera;
+  public environment: Environment;
+
   private active_shaders: Map<Shader, number>;
+  private setCameraAspect: () => void;
 
-  // TODO: environment, lights
-
-  constructor() {
+  constructor(environment?: Partial<Environment>) {
     super();
+
+    this.environment = Scene.constructEnvironment(environment);
   }
 
   async init() {
@@ -25,7 +31,13 @@ export class Scene extends Node {
       1,
       100000
     );
+
+    this.setCameraAspect = () => {
+      this.camera.aspect = canvas.clientWidth / canvas.clientHeight;
+      this.camera.updateProjectionMatrix();
+    };
     this.camera.controler = new MovementControler(this.camera, 2.5);
+    window.addEventListener("resize", this.setCameraAspect);
 
     // Objects setup
     const vertex_source = await loadText("./res/shaders/vertex/texture.glsl");
@@ -59,21 +71,42 @@ export class Scene extends Node {
     this.active_shaders.set(texture_shader, 1);
   }
 
+  destructor() {
+    window.removeEventListener("resize", this.setCameraAspect);
+  }
+
   update() {
     this.camera.update();
     super.update();
   }
 
   display() {
+    webgl.clearColor(...this.environment.background_color, 1.0);
+    webgl.clear(webgl.COLOR_BUFFER_BIT | webgl.DEPTH_BUFFER_BIT);
+
     // Global uniforms
     for (const [shader, _] of this.active_shaders) {
       shader.bind();
+      shader.setUniform3f(
+        Shader.UNIFORM_AMBIENT_LIGHT,
+        ...this.environment.ambient_light
+      );
       shader.setUniformMatrix4fv(
-        "proj_mat",
+        Shader.UNIFORM_PROJECTION_MATRIX,
         new Float32Array(this.camera.camera_matrix)
       );
     }
 
     super.display();
+  }
+
+  private static defaultEnvironment: Environment = {
+    background_color: [0, 0, 0],
+    ambient_light: [0, 0, 0],
+  };
+  private static constructEnvironment(environment?: Partial<Environment>) {
+    return environment
+      ? { ...Scene.defaultEnvironment, ...environment }
+      : { ...Scene.defaultEnvironment };
   }
 }

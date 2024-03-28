@@ -1,15 +1,11 @@
 #version 300 es
 precision mediump float;
 
+layout(location = 0) in vec4 u_Position;
+
 uniform mat4 u_ProjectionMatrix;
 uniform mat4 u_ModelMatrix;
 
-layout(location = 0) in vec4 u_Position;
-layout(location = 1) in vec2 u_TexCoords;
-
-out vec2 o_TexCoords;
-
 void main() {
-	o_TexCoords = u_TexCoords;
 	gl_Position = u_ProjectionMatrix * u_ModelMatrix * u_Position;
 }

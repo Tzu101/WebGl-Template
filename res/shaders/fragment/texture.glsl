@@ -1,11 +1,13 @@
 #version 300 es
 precision mediump float;
 
-in vec2 uv_position;
-out vec4 final_color;
+uniform vec3 u_AmbientLight;
+uniform sampler2D u_Textures[8];
 
-uniform sampler2D textures[8];
+in vec2 o_TexCoords;
+
+out vec4 o_Color;
 
 void main() {
-  final_color = texture(textures[0], uv_position);
+  o_Color = texture(u_Textures[0], o_TexCoords) + vec4(u_AmbientLight, 1.0);
 }

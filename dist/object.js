@@ -1,5 +1,5 @@
 import { Matrix4, Quaternion } from "./math.js";
-import { webgl, IndexBuffer, VertexBuffer, VertexArray, } from "./webgl.js";
+import { webgl, IndexBuffer, VertexBuffer, VertexArray, Shader, } from "./webgl.js";
 class Transform {
     constructor() {
         this._translation = [0, 0, 0];
@@ -201,7 +201,7 @@ export class Material {
         this.textures = textures;
         this.shader.bind();
         for (let t = 0; t < this.textures.length; t++) {
-            this.shader.setUniform1i(`textures[${t}]`, t);
+            this.shader.setUniform1i(`${Shader.UNIFORM_TEXTURES}[${t}]`, t);
         }
     }
     bind() {
@@ -209,9 +209,6 @@ export class Material {
         for (let t = 0; t < this.textures.length; t++) {
             this.textures[t].bind(t);
         }
-    }
-    setUniformMatrix4fv(name, matrix) {
-        this.shader.setUniformMatrix4fv(name, matrix);
     }
 }
 export class Model extends Node {
@@ -242,7 +239,7 @@ export class Model extends Node {
         this.vertex_array.bind();
         this.index_buffer.bind();
         this.material.bind();
-        this.material.setUniformMatrix4fv("model_mat", new Float32Array(this.model_matrix)); //TODO default float
+        this.material.shader.setUniformMatrix4fv(Shader.UNIFORM_MODEL_MATRIX, new Float32Array(this.model_matrix)); //TODO default float
     }
     display() {
         this.bind();

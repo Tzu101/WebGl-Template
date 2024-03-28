@@ -312,7 +312,7 @@ export class Texture {
 }
 
 export class Material {
-  private shader: Shader;
+  public shader: Shader;
   private textures: Texture[];
 
   constructor(shader: Shader, textures: Texture[]) {
@@ -321,7 +321,7 @@ export class Material {
 
     this.shader.bind();
     for (let t = 0; t < this.textures.length; t++) {
-      this.shader.setUniform1i(`textures[${t}]`, t);
+      this.shader.setUniform1i(`${Shader.UNIFORM_TEXTURES}[${t}]`, t);
     }
   }
 
@@ -330,10 +330,6 @@ export class Material {
     for (let t = 0; t < this.textures.length; t++) {
       this.textures[t].bind(t);
     }
-  }
-
-  setUniformMatrix4fv(name: string, matrix: Float32Array) {
-    this.shader.setUniformMatrix4fv(name, matrix);
   }
 }
 
@@ -377,8 +373,8 @@ export class Model extends Node {
     this.vertex_array.bind();
     this.index_buffer.bind();
     this.material.bind();
-    this.material.setUniformMatrix4fv(
-      "model_mat",
+    this.material.shader.setUniformMatrix4fv(
+      Shader.UNIFORM_MODEL_MATRIX,
       new Float32Array(this.model_matrix)
     ); //TODO default float
   }
