@@ -2,14 +2,14 @@
 precision highp float;
 
 layout(location = 0) in vec4 position;
-layout(location = 1) in vec4 color;
+layout(location = 1) in vec2 uv;
 
 uniform mat4 proj_mat;
 uniform mat4 model_mat;
 
-out vec4 frag_color;
+out vec2 uv_position;
 
 void main() {
-	frag_color = color;
+	uv_position = uv;
 	gl_Position = proj_mat * model_mat * position;
 }

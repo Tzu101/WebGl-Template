@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { canvas, canvasInit } from "./canvas.js";
 import { webgl, webglInit, Shader } from "./webgl.js";
-import { loadText, loadImage } from "./resource.js";
+import { loadText, loadModel, loadImage } from "./resource.js";
 import { Node, Camera, Texture, Material, Model } from "./object.js";
 import { MovementControler } from "./controler.js";
 function appInit() {
@@ -138,24 +138,36 @@ function appInit() {
             17, 16, 18, 18, 16, 19,
             20, 21, 22, 20, 22, 23 // Left face
         ];
+        const grass_blade = yield loadModel("./res/models/grass_blade.json");
+        const monkey = yield loadModel("./res/models/monkey.json");
         const vertex_basic_source = loadText("./res/shaders/vertex/basic.glsl");
+        const vertex_texture_source = loadText("./res/shaders/vertex/texture.glsl");
         const fragment_basic_source = loadText("./res/shaders/fragment/basic.glsl");
         const fragment_texture_source = loadText("./res/shaders/fragment/texture.glsl");
         const shader_source = yield Promise.all([
             vertex_basic_source,
+            vertex_texture_source,
             fragment_basic_source,
             fragment_texture_source,
         ]);
-        const shader = new Shader(shader_source[0], shader_source[1]);
+        const shader = new Shader(shader_source[1], shader_source[3]);
         const texture0 = new Texture(yield loadImage("./res/textures/clouds.jpg"));
         const texture1 = new Texture(yield loadImage("./res/textures/grass.jpg"));
-        const material = new Material(shader, [texture0, texture1]);
+        const texture2 = new Texture(yield loadImage("./res/textures/grass_blade.png"));
+        const texture3 = new Texture(yield loadImage("./res/textures/monkey.png"));
+        const material = new Material(shader, [texture3]);
         //const square = new Model(data_cube, [3, 3], indices_cube, material);
-        const square = new Model([data_cube_positions, data_cube_colors], [3, 3], indices_cube, material);
+        /*const square = new Model(
+          [data_cube_positions, data_cube_colors],
+          [3, 3],
+          indices_cube,
+          material
+        );*/
+        const square = new Model([monkey.vertices, monkey.texcoords], [3, 2], monkey.indices, material);
         const camera = new Camera(0.87, canvas.clientWidth / canvas.clientHeight, 1, 100000);
         const node = new Node();
         node.transform.translation = [0, 0, -300];
-        node.transform.scale = [200, 200, 200];
+        node.transform.scale = [20, 20, 20];
         node.updateModelMatrix();
         const controler = new MovementControler(camera, 2.5);
         function loop() {

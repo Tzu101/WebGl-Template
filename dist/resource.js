@@ -24,6 +24,18 @@ export function loadJson(url) {
         return yield data.json();
     });
 }
+export function loadModel(url) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const data = yield fetchData(url);
+        const dataJson = yield data.json();
+        return {
+            vertices: dataJson.meshes[0].vertices,
+            indices: [].concat.apply([], dataJson.meshes[0].faces),
+            normals: dataJson.meshes[0].normals,
+            texcoords: dataJson.meshes[0].texturecoords[0],
+        };
+    });
+}
 export function loadImage(url) {
     return __awaiter(this, void 0, void 0, function* () {
         const texture = new Image();
