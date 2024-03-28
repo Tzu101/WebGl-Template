@@ -26,7 +26,42 @@ type MouseFunc = (event: MouseEvent) => void;
 
 const HALF_PI = Math.PI / 2;
 
-export class MovementControler {
+export class Controler {
+  protected target: Node;
+
+  constructor(target: Node) {
+    this.target = target;
+  }
+
+  // Returns true if position was changed
+  update() {
+    return false;
+  }
+
+  destructor() {
+    throw new Error("Method not implemented");
+  }
+}
+
+export class RotationControler extends Controler {
+  private rotation: number[];
+
+  constructor(target: Node, rotation: number[]) {
+    super(target);
+    this.rotation = rotation;
+  }
+
+  update() {
+    this.target.transform.rotateX(this.rotation[0]);
+    this.target.transform.rotateY(this.rotation[1]);
+    this.target.transform.rotateZ(this.rotation[2]);
+    return true;
+  }
+
+  destructor() {}
+}
+
+export class MovementControler extends Controler {
   private static keyLogger(keymap: KeyMap, state: number) {
     return (event: KeyboardEvent) => {
       switch (event.key) {
@@ -52,13 +87,13 @@ export class MovementControler {
     };
   }
 
-  private target: Node;
   private keymap: KeyMap;
   private mouse_rotation_y: number;
   private mouse_rotation_x: number;
   private mouse_rotation_goal_y: number;
   private mouse_rotation_goal_x: number;
   private is_mouse_lock: boolean;
+  private is_mouse_update: boolean;
   private speed: number;
   private sensitivity: number;
   private interpolation: number;
@@ -75,7 +110,7 @@ export class MovementControler {
     sensitivity: number = 0.01,
     interpolation: number = 0.4
   ) {
-    this.target = target;
+    super(target);
     this.speed = speed;
     this.sensitivity = sensitivity;
     this.interpolation = interpolation;
@@ -93,6 +128,7 @@ export class MovementControler {
     this.mouse_rotation_goal_y = 0;
     this.mouse_rotation_goal_x = 0;
     this.is_mouse_lock = false;
+    this.is_mouse_update = false;
 
     this.onKeyUp = MovementControler.keyLogger(this.keymap, 0);
     this.onKeyDown = MovementControler.keyLogger(this.keymap, 1);
@@ -102,33 +138,33 @@ export class MovementControler {
       }
     };
     this.onMouseMove = (event: MouseEvent) => {
-      if (this.is_mouse_lock) {
-        this.mouse_rotation_goal_x -= event.movementY * this.sensitivity;
-        this.mouse_rotation_goal_x = clamp(
-          this.mouse_rotation_goal_x,
-          -HALF_PI,
-          HALF_PI
-        );
-        this.mouse_rotation_goal_y -= event.movementX * this.sensitivity;
+      if (!this.is_mouse_lock) return;
+      this.is_mouse_update = true;
 
-        this.mouse_rotation_x = interpolate(
-          this.mouse_rotation_x,
-          this.mouse_rotation_goal_x,
-          this.interpolation
-        );
-        this.mouse_rotation_y = interpolate(
-          this.mouse_rotation_y,
-          this.mouse_rotation_goal_y,
-          this.interpolation
-        );
+      this.mouse_rotation_goal_x -= event.movementY * this.sensitivity;
+      this.mouse_rotation_goal_x = clamp(
+        this.mouse_rotation_goal_x,
+        -HALF_PI,
+        HALF_PI
+      );
+      this.mouse_rotation_goal_y -= event.movementX * this.sensitivity;
 
-        this.target.transform.euler_rotation = [
-          this.mouse_rotation_x,
-          this.mouse_rotation_y,
-          0,
-        ];
-        this.target.updateModelMatrix();
-      }
+      this.mouse_rotation_x = interpolate(
+        this.mouse_rotation_x,
+        this.mouse_rotation_goal_x,
+        this.interpolation
+      );
+      this.mouse_rotation_y = interpolate(
+        this.mouse_rotation_y,
+        this.mouse_rotation_goal_y,
+        this.interpolation
+      );
+
+      this.target.transform.euler_rotation = [
+        this.mouse_rotation_x,
+        this.mouse_rotation_y,
+        0,
+      ];
     };
     this.onPointerLockChange = () => {
       this.is_mouse_lock = !this.is_mouse_lock;
@@ -164,16 +200,25 @@ export class MovementControler {
       this.getMoveDirection(Direction.BACKWARD) -
       this.getMoveDirection(Direction.FORWARD);
 
-    if (Math.abs(move_x) + Math.abs(move_y) + Math.abs(move_z)) {
-      let move = [move_x, 0, move_z];
-      move = Vector3.rotateY(move, this.target.transform.euler_rotation[1]);
-      move = Vector3.normalize(move);
-      move[1] = move_y;
-
-      this.target.transform.translation[0] += move[0] * this.speed;
-      this.target.transform.translation[1] += move[1] * this.speed;
-      this.target.transform.translation[2] += move[2] * this.speed;
-      this.target.updateModelMatrix();
+    let is_changed = false;
+    if (this.is_mouse_update) {
+      this.is_mouse_update = false;
+      is_changed = true;
     }
+    if (Math.abs(move_x) + Math.abs(move_y) + Math.abs(move_z) == 0) {
+      return is_changed;
+    }
+    is_changed = true;
+
+    let move = [move_x, 0, move_z];
+    move = Vector3.rotateY(move, this.target.transform.euler_rotation[1]);
+    move = Vector3.normalize(move);
+    move[1] = move_y;
+
+    this.target.transform.translation[0] += move[0] * this.speed;
+    this.target.transform.translation[1] += move[1] * this.speed;
+    this.target.transform.translation[2] += move[2] * this.speed;
+
+    return is_changed;
   }
 }

@@ -111,6 +111,26 @@ export class Node {
         this.children.push(child);
         child.root_transform = this.global_transform;
     }
+    set controler(new_controler) {
+        if (this._controler) {
+            this._controler.destructor();
+        }
+        this._controler = new_controler;
+    }
+    update() {
+        var _a;
+        if ((_a = this._controler) === null || _a === void 0 ? void 0 : _a.update()) {
+            this.updateModelMatrix();
+        }
+        for (const child of this.children) {
+            child.update();
+        }
+    }
+    display() {
+        for (const child of this.children) {
+            child.display();
+        }
+    }
 }
 export class Camera extends Node {
     constructor(fov_rad, aspect, near, far) {
@@ -163,7 +183,7 @@ export class Texture {
         }
         this.texture = new_texture;
         webgl.bindTexture(webgl.TEXTURE_2D, this.texture);
-        //webgl.pixelStorei(webgl.UNPACK_FLIP_Y_WEBGL, true);
+        webgl.pixelStorei(webgl.UNPACK_FLIP_Y_WEBGL, true);
         webgl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_WRAP_S, webgl.CLAMP_TO_EDGE);
         webgl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_WRAP_T, webgl.CLAMP_TO_EDGE);
         webgl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_MIN_FILTER, webgl.NEAREST);
@@ -190,9 +210,13 @@ export class Material {
             this.textures[t].bind(t);
         }
     }
+    setUniformMatrix4fv(name, matrix) {
+        this.shader.setUniformMatrix4fv(name, matrix);
+    }
 }
-export class Model {
+export class Model extends Node {
     constructor(data, data_layout, indices, material) {
+        super();
         this.vertex_array = new VertexArray(data_layout);
         if (Array.isArray(data[0])) {
             data = data;
@@ -218,8 +242,11 @@ export class Model {
         this.vertex_array.bind();
         this.index_buffer.bind();
         this.material.bind();
+        this.material.setUniformMatrix4fv("model_mat", new Float32Array(this.model_matrix)); //TODO default float
     }
-    draw() {
+    display() {
+        this.bind();
         webgl.drawElements(webgl.TRIANGLES, this.index_buffer.size, webgl.UNSIGNED_SHORT, 0);
+        super.display();
     }
 }

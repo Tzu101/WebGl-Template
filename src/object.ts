@@ -6,6 +6,7 @@ import {
   VertexArray,
   Shader,
 } from "./webgl.js";
+import { type Controler } from "./controler.js";
 
 class Transform {
   private _translation: number[];
@@ -121,6 +122,8 @@ export class Node {
   protected _model_matrix: number[];
   protected children: Node[];
 
+  protected _controler?: Controler;
+
   constructor() {
     this._local_transform = new Transform();
     this._root_transform = new Transform();
@@ -175,6 +178,28 @@ export class Node {
   addChild(child: Node) {
     this.children.push(child);
     child.root_transform = this.global_transform;
+  }
+
+  set controler(new_controler: Controler) {
+    if (this._controler) {
+      this._controler.destructor();
+    }
+    this._controler = new_controler;
+  }
+
+  update() {
+    if (this._controler?.update()) {
+      this.updateModelMatrix();
+    }
+    for (const child of this.children) {
+      child.update();
+    }
+  }
+
+  display() {
+    for (const child of this.children) {
+      child.display();
+    }
   }
 }
 
@@ -248,7 +273,7 @@ export class Texture {
     this.texture = new_texture;
 
     webgl.bindTexture(webgl.TEXTURE_2D, this.texture);
-    //webgl.pixelStorei(webgl.UNPACK_FLIP_Y_WEBGL, true);
+    webgl.pixelStorei(webgl.UNPACK_FLIP_Y_WEBGL, true);
     webgl.texParameteri(
       webgl.TEXTURE_2D,
       webgl.TEXTURE_WRAP_S,
@@ -306,9 +331,13 @@ export class Material {
       this.textures[t].bind(t);
     }
   }
+
+  setUniformMatrix4fv(name: string, matrix: Float32Array) {
+    this.shader.setUniformMatrix4fv(name, matrix);
+  }
 }
 
-export class Model {
+export class Model extends Node {
   private vertex_array: VertexArray;
   private index_buffer: IndexBuffer;
   private material: Material;
@@ -319,6 +348,8 @@ export class Model {
     indices: number[],
     material: Material
   ) {
+    super();
+
     this.vertex_array = new VertexArray(data_layout);
     if (Array.isArray(data[0])) {
       data = data as number[][];
@@ -346,14 +377,20 @@ export class Model {
     this.vertex_array.bind();
     this.index_buffer.bind();
     this.material.bind();
+    this.material.setUniformMatrix4fv(
+      "model_mat",
+      new Float32Array(this.model_matrix)
+    ); //TODO default float
   }
 
-  draw() {
+  display() {
+    this.bind();
     webgl.drawElements(
       webgl.TRIANGLES,
       this.index_buffer.size,
       webgl.UNSIGNED_SHORT,
       0
     );
+    super.display();
   }
 }
