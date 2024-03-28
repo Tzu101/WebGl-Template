@@ -1,3 +1,11 @@
+export function clamp(num: number, min: number, max: number) {
+  return Math.min(Math.max(num, min), max);
+}
+
+export function interpolate(current: number, goal: number, alpha: number) {
+  return current + alpha * (goal - current);
+}
+
 export class Vector3 {
   static normalize(vector: number[]) {
     const length = Math.sqrt(

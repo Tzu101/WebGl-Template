@@ -314,16 +314,27 @@ export class Model {
   private material: Material;
 
   constructor(
-    data: number[],
+    data: number[] | number[][],
     data_layout: number[],
     indices: number[],
     material: Material
   ) {
-    const vertex_buffer = new VertexBuffer();
-    vertex_buffer.bufferData(data);
-
     this.vertex_array = new VertexArray(data_layout);
-    this.vertex_array.applyToBuffer(vertex_buffer);
+    if (Array.isArray(data[0])) {
+      data = data as number[][];
+      const vertexBuffers: VertexBuffer[] = [];
+      for (const vertex_data of data) {
+        const vertex_buffer = new VertexBuffer();
+        vertex_buffer.bufferData(vertex_data);
+        vertexBuffers.push(vertex_buffer);
+      }
+      this.vertex_array.applyToBuffers(vertexBuffers);
+    } else {
+      data = data as number[];
+      const vertex_buffer = new VertexBuffer();
+      vertex_buffer.bufferData(data);
+      this.vertex_array.applyToBuffer(vertex_buffer);
+    }
 
     this.index_buffer = new IndexBuffer();
     this.index_buffer.bufferData(indices);

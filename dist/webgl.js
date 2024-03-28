@@ -72,7 +72,15 @@ export class VertexArray {
             offset += layer_size * Float32Array.BYTES_PER_ELEMENT;
         }
     }
-    applyToBuffers() { }
+    applyToBuffers(buffers) {
+        this.bind();
+        for (let buffer_index = 0; buffer_index < buffers.length; buffer_index++) {
+            buffers[buffer_index].bind();
+            const buffer_size = this.layout[buffer_index];
+            webgl.enableVertexAttribArray(buffer_index);
+            webgl.vertexAttribPointer(buffer_index, buffer_size, webgl.FLOAT, false, buffer_size * Float32Array.BYTES_PER_ELEMENT, 0);
+        }
+    }
 }
 export class Shader {
     static throwShaderError(shader) {
