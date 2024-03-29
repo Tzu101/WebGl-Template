@@ -34,7 +34,7 @@ export class Scene extends Node {
             const monkey_model = yield loadModel("./res/models/monkey.json");
             const monkey_texture = new Texture(yield loadImage("./res/textures/monkey.png"));
             const monkey_material = new Material(texture_shader, [monkey_texture]);
-            const monkey = new Model([monkey_model.vertices, monkey_model.texcoords], [3, 2], monkey_model.indices, monkey_material);
+            const monkey = new Model([monkey_model.vertices, monkey_model.normals, monkey_model.texcoords], [3, 3, 2], monkey_model.indices, monkey_material);
             monkey.controler = new RotationControler(monkey, [0, 0, 0.01]);
             this.addChild(monkey);
             monkey.transform.translation = [0, 0, -300];
@@ -59,8 +59,9 @@ export class Scene extends Node {
         // Global uniforms
         for (const [shader, _] of this.active_shaders) {
             shader.bind();
-            shader.setUniform3f(Shader.UNIFORM_AMBIENT_LIGHT, ...this.environment.ambient_light);
-            shader.setUniformMatrix4fv(Shader.UNIFORM_PROJECTION_MATRIX, new Float32Array(this.camera.camera_matrix));
+            shader.setUniform3fv(Shader.UNIFORM_VIEW_POSITION, this.camera.transform.translation);
+            shader.setUniform3fv(Shader.UNIFORM_AMBIENT_LIGHT, this.environment.ambient_light);
+            shader.setUniformMatrix4fv(Shader.UNIFORM_PROJECTION_MATRIX, this.camera.camera_matrix);
         }
         super.display();
     }

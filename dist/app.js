@@ -21,7 +21,7 @@ function appInit() {
             return;
         }
         const scene = new Scene({
-            ambient_light: [0.3, 0, 0.2],
+            ambient_light: [0.25, 0.25, 0.25],
         });
         yield scene.init();
         function loop() {

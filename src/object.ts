@@ -375,8 +375,8 @@ export class Model extends Node {
     this.material.bind();
     this.material.shader.setUniformMatrix4fv(
       Shader.UNIFORM_MODEL_MATRIX,
-      new Float32Array(this.model_matrix)
-    ); //TODO default float
+      this.model_matrix
+    );
   }
 
   display() {

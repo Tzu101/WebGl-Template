@@ -151,12 +151,18 @@ export class Shader {
         const uniform_location = this.getUniformLocation(name);
         webgl.uniform3f(uniform_location, float1, float2, float3);
     }
+    setUniform3fv(name, float_vector) {
+        const uniform_location = this.getUniformLocation(name);
+        webgl.uniform3fv(uniform_location, new Float32Array(float_vector));
+    }
     setUniformMatrix4fv(name, matrix) {
         const uniform_location = this.getUniformLocation(name);
-        webgl.uniformMatrix4fv(uniform_location, false, matrix);
+        webgl.uniformMatrix4fv(uniform_location, false, new Float32Array(matrix));
     }
 }
+Shader.UNIFORM_VIEW_POSITION = "u_ViewPosition";
 Shader.UNIFORM_MODEL_MATRIX = "u_ModelMatrix";
 Shader.UNIFORM_PROJECTION_MATRIX = "u_ProjectionMatrix";
 Shader.UNIFORM_AMBIENT_LIGHT = "u_AmbientLight";
 Shader.UNIFORM_TEXTURES = "u_Textures";
+Shader.UNIFORM_NORMALS = "u_Normal";

@@ -1,5 +1,5 @@
 import { canvasInit } from "./canvas.js";
-import { webgl, webglInit } from "./webgl.js";
+import { webglInit } from "./webgl.js";
 import { Scene } from "./scene.js";
 
 async function appInit() {
@@ -14,7 +14,7 @@ async function appInit() {
   }
 
   const scene = new Scene({
-    ambient_light: [0.3, 0, 0.2],
+    ambient_light: [0.25, 0.25, 0.25],
   });
   await scene.init();
 
