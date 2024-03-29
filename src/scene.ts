@@ -5,10 +5,14 @@ import { Node, Camera, Texture, Material, Model } from "./object.js";
 import { RotationControler, MovementControler } from "./controler.js";
 
 // TODO: Define background, lights, fog, skybox
-export type Environment = {
+interface DirectionalLight {}
+
+interface PointLight {}
+
+export interface Environment {
   background_color: [number, number, number];
   ambient_light: [number, number, number];
-};
+}
 
 export class Scene extends Node {
   public camera: Camera;

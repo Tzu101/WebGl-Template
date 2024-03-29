@@ -20,10 +20,11 @@ void main() {
 
   vec3 diffuse = light_color * max(0.0, dot(light_direction, normal));
 
-  vec3 reflection_direction = reflect(-light_direction, normal);
-  vec3 specular = light_color * pow(max(dot(u_ViewPosition, reflection_direction), 0.0), 64.0) * 0.5;
+  vec3 view_direction = normalize(u_ViewPosition - o_Position);
+  vec3 specular_vector = normalize(light_direction + view_direction);
+  vec3 specular = light_color * pow(max(0.0, dot(normal, specular_vector)), 32.0);
 
-  vec3 light = u_AmbientLight + diffuse;
+  vec3 light = u_AmbientLight + diffuse + specular;
 
   vec4 texel = texture(u_Textures[0], o_TexCoords);
   o_Color = texel * vec4(light, 1.0);
