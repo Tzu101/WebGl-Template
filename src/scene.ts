@@ -5,13 +5,23 @@ import { Node, Camera, Texture, Material, Model } from "./object.js";
 import { RotationControler, MovementControler } from "./controler.js";
 
 // TODO: Define background, lights, fog, skybox
-interface DirectionalLight {}
+interface DirectionalLight {
+  color: [number, number, number];
+  direction: [number, number, number];
+  intensity: number;
+}
 
-interface PointLight {}
+interface PointLight {
+  color: [number, number, number];
+  position: [number, number, number];
+  intensity: number;
+}
 
 export interface Environment {
   background_color: [number, number, number];
   ambient_light: [number, number, number];
+  directional_lights: DirectionalLight[];
+  point_lights: PointLight[];
 }
 
 export class Scene extends Node {
@@ -40,8 +50,10 @@ export class Scene extends Node {
       this.camera.aspect = canvas.clientWidth / canvas.clientHeight;
       this.camera.updateProjectionMatrix();
     };
-    this.camera.controler = new MovementControler(this.camera, 2.5);
+    this.camera.controler = new MovementControler(this.camera, 0.2);
     window.addEventListener("resize", this.setCameraAspect);
+    this.camera.transform.translation = [0, 0, 10];
+    this.camera.updateModelMatrix();
 
     // Objects setup
     const vertex_source = await loadText("./res/shaders/vertex/texture.glsl");
@@ -64,15 +76,60 @@ export class Scene extends Node {
     );
     monkey.controler = new RotationControler(monkey, [0, 0, 0.01]);
     this.addChild(monkey);
-
-    monkey.transform.translation = [0, 0, -300];
-    monkey.transform.scale = [20, 20, 20];
     monkey.transform.euler_rotation = [Math.PI * 1.5, 0, 0];
     monkey.updateModelMatrix();
 
     // Performance data setup
     this.active_shaders = new Map();
     this.active_shaders.set(texture_shader, 1);
+
+    // Global static uniforms
+    for (const [shader, _] of this.active_shaders) {
+      const point_lights_active = this.environment.point_lights.length;
+      shader.setUniform1i(
+        Shader.UNIFORM_POINT_LIGHTS_ACTIVE,
+        point_lights_active
+      );
+
+      for (let l = 0; l < point_lights_active; l++) {
+        const point_light = this.environment.point_lights[l];
+        shader.setUniform3fv(
+          `${Shader.UNIFORM_POINT_LIGHTS}[${l}].color`,
+          point_light.color
+        );
+        shader.setUniform3fv(
+          `${Shader.UNIFORM_POINT_LIGHTS}[${l}].position`,
+          point_light.position
+        );
+        shader.setUniform1f(
+          `${Shader.UNIFORM_POINT_LIGHTS}[${l}].intensity`,
+          point_light.intensity
+        );
+      }
+
+      const directional_lights_active =
+        this.environment.directional_lights.length;
+      shader.setUniform1i(
+        Shader.UNIFORM_DIRECTIONAL_LIGHTS_ACTIVE,
+        directional_lights_active
+      );
+
+      for (let l = 0; l < directional_lights_active; l++) {
+        const directional_light = this.environment.directional_lights[l];
+        shader.setUniform3fv(
+          `${Shader.UNIFORM_DIRECTIONAL_LIGHTS}[${l}].color`,
+          directional_light.color
+        );
+        shader.setUniform3fv(
+          `${Shader.UNIFORM_DIRECTIONAL_LIGHTS}[${l}].direction`,
+          directional_light.direction
+        );
+        shader.setUniform1f(
+          `${Shader.UNIFORM_DIRECTIONAL_LIGHTS}[${l}].intensity`,
+          directional_light.intensity
+        );
+      }
+    }
   }
 
   destructor() {
@@ -88,7 +145,7 @@ export class Scene extends Node {
     webgl.clearColor(...this.environment.background_color, 1.0);
     webgl.clear(webgl.COLOR_BUFFER_BIT | webgl.DEPTH_BUFFER_BIT);
 
-    // Global uniforms
+    // Global dynamic uniforms
     for (const [shader, _] of this.active_shaders) {
       shader.bind();
       shader.setUniform3fv(
@@ -111,6 +168,8 @@ export class Scene extends Node {
   private static defaultEnvironment: Environment = {
     background_color: [0, 0, 0],
     ambient_light: [0, 0, 0],
+    directional_lights: [],
+    point_lights: [],
   };
   private static constructEnvironment(environment?: Partial<Environment>) {
     return environment

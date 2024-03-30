@@ -147,6 +147,10 @@ export class Shader {
         const uniform_location = this.getUniformLocation(name);
         webgl.uniform1i(uniform_location, integer);
     }
+    setUniform1f(name, float) {
+        const uniform_location = this.getUniformLocation(name);
+        webgl.uniform1f(uniform_location, float);
+    }
     setUniform3f(name, float1, float2, float3) {
         const uniform_location = this.getUniformLocation(name);
         webgl.uniform3f(uniform_location, float1, float2, float3);
@@ -164,5 +168,9 @@ Shader.UNIFORM_VIEW_POSITION = "u_ViewPosition";
 Shader.UNIFORM_MODEL_MATRIX = "u_ModelMatrix";
 Shader.UNIFORM_PROJECTION_MATRIX = "u_ProjectionMatrix";
 Shader.UNIFORM_AMBIENT_LIGHT = "u_AmbientLight";
+Shader.UNIFORM_DIRECTIONAL_LIGHTS_ACTIVE = "u_DirectionalLightsActive";
+Shader.UNIFORM_DIRECTIONAL_LIGHTS = "u_DirectionalLights";
+Shader.UNIFORM_POINT_LIGHTS_ACTIVE = "u_PointLightsActive";
+Shader.UNIFORM_POINT_LIGHTS = "u_PointLights";
 Shader.UNIFORM_TEXTURES = "u_Textures";
 Shader.UNIFORM_NORMALS = "u_Normal";

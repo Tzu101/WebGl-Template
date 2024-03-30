@@ -15,6 +15,25 @@ async function appInit() {
 
   const scene = new Scene({
     ambient_light: [0.25, 0.25, 0.25],
+    point_lights: [
+      {
+        color: [0, 1, 0],
+        position: [10, 0, 0],
+        intensity: 0.75,
+      },
+      {
+        color: [1, 0, 0],
+        position: [0, 0, 10],
+        intensity: 0.5,
+      },
+    ],
+    directional_lights: [
+      {
+        color: [0.9, 0.9, 0.1],
+        direction: [0.2, 1, 0],
+        intensity: 2,
+      },
+    ],
   });
   await scene.init();
 
