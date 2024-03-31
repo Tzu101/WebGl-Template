@@ -8,6 +8,7 @@ export function webglInit() {
     webgl = webgl_context;
     setViewport();
     webgl.enable(webgl.CULL_FACE);
+    //webgl.frontFace(webgl.CW);
     webgl.enable(webgl.DEPTH_TEST);
     return true;
 }
@@ -173,4 +174,5 @@ Shader.UNIFORM_DIRECTIONAL_LIGHTS = "u_DirectionalLights";
 Shader.UNIFORM_POINT_LIGHTS_ACTIVE = "u_PointLightsActive";
 Shader.UNIFORM_POINT_LIGHTS = "u_PointLights";
 Shader.UNIFORM_TEXTURES = "u_Textures";
+Shader.UNIFORM_TEXTURE = "u_Texture";
 Shader.UNIFORM_NORMALS = "u_Normal";

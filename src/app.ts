@@ -19,19 +19,19 @@ async function appInit() {
       {
         color: [0, 1, 0],
         position: [10, 0, 0],
-        intensity: 0.75,
+        intensity: 0.25,
       },
       {
         color: [1, 0, 0],
         position: [0, 0, 10],
-        intensity: 0.5,
+        intensity: 0.25,
       },
     ],
     directional_lights: [
       {
-        color: [0.9, 0.9, 0.1],
+        color: [1, 1, 1],
         direction: [0.2, 1, 0],
-        intensity: 2,
+        intensity: 1,
       },
     ],
   });

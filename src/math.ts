@@ -561,10 +561,6 @@ export class Matrix4 {
     ];
   }
 
-  static perspective_temp(f: number) {
-    return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, f, 0, 0, 0, 1];
-  }
-
   static perspective(
     fov_rad: number,
     aspect: number,

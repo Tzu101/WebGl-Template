@@ -18,15 +18,20 @@ type ModelData = {
   normals: number[];
   texcoords: number[];
 };
-export async function loadModel(url: string): Promise<ModelData> {
+export async function loadModels(url: string): Promise<ModelData[]> {
   const data = await fetchData(url);
   const dataJson = await data.json();
-  return {
-    vertices: dataJson.meshes[0].vertices,
-    indices: [].concat.apply([], dataJson.meshes[0].faces),
-    normals: dataJson.meshes[0].normals,
-    texcoords: dataJson.meshes[0].texturecoords[0],
-  };
+
+  const models: ModelData[] = [];
+  for (const mesh of dataJson.meshes) {
+    models.push({
+      vertices: mesh.vertices,
+      indices: [].concat.apply([], mesh.faces),
+      normals: mesh.normals,
+      texcoords: mesh.texturecoords[0],
+    });
+  }
+  return models;
 }
 
 export async function loadImage(url: string) {

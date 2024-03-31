@@ -499,9 +499,6 @@ export class Matrix4 {
             1,
         ];
     }
-    static perspective_temp(f) {
-        return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, f, 0, 0, 0, 1];
-    }
     static perspective(fov_rad, aspect, near, far) {
         var f = Math.tan(Math.PI * 0.5 - 0.5 * fov_rad);
         var range = 1.0 / (near - far);

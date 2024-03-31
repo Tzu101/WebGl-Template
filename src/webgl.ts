@@ -13,6 +13,7 @@ export function webglInit(): boolean {
   setViewport();
 
   webgl.enable(webgl.CULL_FACE);
+  //webgl.frontFace(webgl.CW);
   webgl.enable(webgl.DEPTH_TEST);
 
   return true;
@@ -252,5 +253,6 @@ export class Shader {
   static UNIFORM_POINT_LIGHTS = "u_PointLights";
 
   static UNIFORM_TEXTURES = "u_Textures";
+  static UNIFORM_TEXTURE = "u_Texture";
   static UNIFORM_NORMALS = "u_Normal";
 }

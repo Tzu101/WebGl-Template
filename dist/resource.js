@@ -24,16 +24,20 @@ export function loadJson(url) {
         return yield data.json();
     });
 }
-export function loadModel(url) {
+export function loadModels(url) {
     return __awaiter(this, void 0, void 0, function* () {
         const data = yield fetchData(url);
         const dataJson = yield data.json();
-        return {
-            vertices: dataJson.meshes[0].vertices,
-            indices: [].concat.apply([], dataJson.meshes[0].faces),
-            normals: dataJson.meshes[0].normals,
-            texcoords: dataJson.meshes[0].texturecoords[0],
-        };
+        const models = [];
+        for (const mesh of dataJson.meshes) {
+            models.push({
+                vertices: mesh.vertices,
+                indices: [].concat.apply([], mesh.faces),
+                normals: mesh.normals,
+                texcoords: mesh.texturecoords[0],
+            });
+        }
+        return models;
     });
 }
 export function loadImage(url) {
