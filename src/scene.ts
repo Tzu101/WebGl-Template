@@ -140,7 +140,7 @@ export class Scene extends Node {
   public after_effcts: AfterEffects;
 
   private active_shaders: Map<Shader, number>;
-  private setCameraAspect: () => void;
+  private onScreenResize: () => void;
 
   constructor(environment?: Partial<Environment>) {
     super();
@@ -156,16 +156,15 @@ export class Scene extends Node {
       100000
     );
 
-    this.setCameraAspect = () => {
+    this.onScreenResize = () => {
       this.camera.aspect = canvas.clientWidth / canvas.clientHeight;
       this.camera.updateProjectionMatrix();
+      this.after_effcts.adjustToCanvas();
     };
     this.camera.controler = new MovementControler(this.camera, 0.2);
-    window.addEventListener("resize", this.setCameraAspect);
+    window.addEventListener("resize", this.onScreenResize);
     this.camera.transform.translation = [0, 0, 10];
     this.camera.updateModelMatrix();
-
-    let startTime = performance.now();
 
     // Objects setup
     const loader = new ResourceLoader();
@@ -194,21 +193,6 @@ export class Scene extends Node {
     const donut_icing_texture = new Texture(
       loader.reciveImage(donut_icing_texture_index)
     );
-
-    /*const vertex_source = await loadText("./res/shaders/vertex/texture.glsl");
-    const fragment_source = await loadText(
-      "./res/shaders/fragment/texture.glsl"
-    );
-
-    const donut_models = await loadModels("./res/models/donut.json");
-    const donut_base_texture = new Texture(
-      await loadImage("./res/textures/donut.png")
-    );
-    const donut_icing_texture = new Texture(
-      await loadImage("./res/textures/icing.png")
-    );*/
-
-    console.log(performance.now() - startTime);
 
     const texture_shader = new Shader(vertex_source, fragment_source);
 
@@ -310,7 +294,7 @@ export class Scene extends Node {
   }
 
   destructor() {
-    window.removeEventListener("resize", this.setCameraAspect);
+    window.removeEventListener("resize", this.onScreenResize);
   }
 
   update() {
@@ -339,6 +323,7 @@ export class Scene extends Node {
         this.camera.camera_matrix
       );
     }
+
     super.display();
 
     this.after_effcts.unbind();
