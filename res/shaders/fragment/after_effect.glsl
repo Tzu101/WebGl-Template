@@ -8,7 +8,7 @@ in vec2 o_TexCoords;
 out vec4 o_Color;
 
 void main() {
-  float offset = 0.015;
+  float offset = 0.005;
 
   vec4 texel1 = texture(u_Texture, o_TexCoords + vec2(0.0, 0.0));
   vec4 texel2 = texture(u_Texture, o_TexCoords + vec2(0.0, -offset));

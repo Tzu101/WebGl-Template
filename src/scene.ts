@@ -1,6 +1,6 @@
 import { canvas } from "./canvas.js";
 import { webgl, Shader, VertexBuffer, VertexArray } from "./webgl.js";
-import { loadText, loadModels, loadImage } from "./resource.js";
+import { loadText, loadModels, loadImage, ResourceLoader } from "./resource.js";
 import { Node, Camera, Texture, Material, Model } from "./object.js";
 import { RotationControler, MovementControler } from "./controler.js";
 
@@ -165,12 +165,40 @@ export class Scene extends Node {
     this.camera.transform.translation = [0, 0, 10];
     this.camera.updateModelMatrix();
 
+    let startTime = performance.now();
+
     // Objects setup
-    const vertex_source = await loadText("./res/shaders/vertex/texture.glsl");
+    const loader = new ResourceLoader();
+    const vertex_source_index = loader.requestText(
+      "./res/shaders/vertex/texture.glsl"
+    );
+    const fragment_source_index = loader.requestText(
+      "./res/shaders/fragment/texture.glsl"
+    );
+    const donut_models_index = loader.requestModels("./res/models/donut.json");
+    const donut_base_texture_index = loader.requestImage(
+      "./res/textures/donut.png"
+    );
+    const donut_icing_texture_index = loader.requestImage(
+      "./res/textures/icing.png"
+    );
+
+    await loader.loadResources();
+
+    const vertex_source = loader.reciveText(vertex_source_index);
+    const fragment_source = loader.reciveText(fragment_source_index);
+    const donut_models = loader.reciveModels(donut_models_index);
+    const donut_base_texture = new Texture(
+      loader.reciveImage(donut_base_texture_index)
+    );
+    const donut_icing_texture = new Texture(
+      loader.reciveImage(donut_icing_texture_index)
+    );
+
+    /*const vertex_source = await loadText("./res/shaders/vertex/texture.glsl");
     const fragment_source = await loadText(
       "./res/shaders/fragment/texture.glsl"
     );
-    const texture_shader = new Shader(vertex_source, fragment_source);
 
     const donut_models = await loadModels("./res/models/donut.json");
     const donut_base_texture = new Texture(
@@ -178,7 +206,11 @@ export class Scene extends Node {
     );
     const donut_icing_texture = new Texture(
       await loadImage("./res/textures/icing.png")
-    );
+    );*/
+
+    console.log(performance.now() - startTime);
+
+    const texture_shader = new Shader(vertex_source, fragment_source);
 
     const donut_base_material = new Material(texture_shader, [
       donut_base_texture,
