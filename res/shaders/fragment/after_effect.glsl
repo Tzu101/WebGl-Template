@@ -2,13 +2,14 @@
 precision mediump float;
 
 uniform sampler2D u_Texture;
+uniform float u_Timer;
 
 in vec2 o_TexCoords;
 
 out vec4 o_Color;
 
 void main() {
-  float offset = 0.005;
+  /*float offset = u_Blur;
 
   vec4 texel1 = texture(u_Texture, o_TexCoords + vec2(0.0, 0.0));
   vec4 texel2 = texture(u_Texture, o_TexCoords + vec2(0.0, -offset));
@@ -20,6 +21,7 @@ void main() {
   vec4 texel8 = texture(u_Texture, o_TexCoords + vec2(offset, -offset));
   vec4 texel9 = texture(u_Texture, o_TexCoords + vec2(-offset, offset));
   
-  //o_Color = texture(u_Texture, o_TexCoords);
-  o_Color = (texel1 + texel2 + texel3 + texel4 + texel5 + texel6 + texel7 + texel8 + texel9) / 9.0;
+  o_Color = (texel1 + texel2 + texel3 + texel4 + texel5 + texel6 + texel7 + texel8 + texel9) / 9.0;*/
+  
+  o_Color = texture(u_Texture, o_TexCoords) - vec4(vec3(u_Timer), 0.0);
 }

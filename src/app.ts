@@ -14,17 +14,18 @@ async function appInit() {
   }
 
   const scene = new Scene({
-    ambient_light: [0.25, 0.25, 0.25],
+    background_color: [0.3, 0.6, 1],
+    ambient_light: [0.15, 0.15, 0.15],
     point_lights: [
       {
-        color: [0, 1, 0],
+        color: [1, 0, 0.5],
         position: [10, 0, 0],
-        intensity: 0.25,
+        intensity: 0.5,
       },
       {
-        color: [1, 0, 0],
-        position: [0, 0, 10],
-        intensity: 0.25,
+        color: [0.75, 0.5, 0],
+        position: [0, 0, 5],
+        intensity: 0.65,
       },
     ],
     directional_lights: [

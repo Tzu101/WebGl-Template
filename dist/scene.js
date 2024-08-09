@@ -77,7 +77,7 @@ export class Scene extends Node {
                 this.camera.updateProjectionMatrix();
                 this.after_effcts.adjustToCanvas();
             };
-            this.camera.controler = new MovementControler(this.camera, 0.2);
+            this.camera.controler = new MovementControler(this.camera, 0.1);
             window.addEventListener("resize", this.onScreenResize);
             this.camera.transform.translation = [0, 0, 10];
             this.camera.updateModelMatrix();
@@ -101,24 +101,30 @@ export class Scene extends Node {
             const donut_icing_material = new Material(texture_shader, [
                 donut_icing_texture,
             ]);
-            const donut_base = new Model([
-                donut_models[0].vertices,
-                donut_models[0].normals,
-                donut_models[0].texcoords,
-            ], [3, 3, 2], donut_models[0].indices, donut_base_material);
-            const donut_icing = new Model([
-                donut_models[1].vertices,
-                donut_models[1].normals,
-                donut_models[1].texcoords,
-            ], [3, 3, 2], donut_models[1].indices, donut_icing_material);
-            const donut = new Node();
-            donut.addChild(donut_base);
-            donut.addChild(donut_icing);
-            donut.transform.scale = [10, 10, 10];
-            donut.transform.euler_rotation = [Math.PI * 1.5, 0, 0];
-            donut.controler = new RotationControler(donut, [0, 0, 0.01]);
-            donut.updateModelMatrix();
-            this.addChild(donut);
+            for (let donut_index = 0; donut_index < 100; donut_index += 1) {
+                const donut_base = new Model([
+                    donut_models[0].vertices,
+                    donut_models[0].normals,
+                    donut_models[0].texcoords,
+                ], [3, 3, 2], donut_models[0].indices, donut_base_material);
+                const donut_icing = new Model([
+                    donut_models[1].vertices,
+                    donut_models[1].normals,
+                    donut_models[1].texcoords,
+                ], [3, 3, 2], donut_models[1].indices, donut_icing_material);
+                const range = donut_index + 30;
+                const range_half = range / 2;
+                const scale = Math.random() * 19 + 1;
+                const donut = new Node();
+                donut.addChild(donut_base);
+                donut.addChild(donut_icing);
+                donut.transform.translation = [Math.random() * range - range_half, Math.random() * range_half, Math.random() * range - range_half];
+                donut.transform.scale = [scale, scale, scale];
+                donut.transform.euler_rotation = [Math.PI * 1.5, 0, 0];
+                donut.controler = new RotationControler(donut, [Math.random() / 100, Math.random() / 100, Math.random() / 100]);
+                donut.updateModelMatrix();
+                this.addChild(donut);
+            }
             // Performance data setup
             this.active_shaders = new Map();
             this.active_shaders.set(texture_shader, 1);
@@ -166,6 +172,11 @@ export class Scene extends Node {
         super.display();
         this.after_effcts.unbind();
         this.after_effcts.apply();
+        const frequency = 0.1;
+        const t = Date.now() / 1000; // Time in seconds
+        const oscillation = 0.5 + 0.5 * Math.sin(t * frequency * 2 * Math.PI); // frequency determines the speed of oscillation
+        const value = oscillation * 0.75; // Scale to range [0.25, 1]
+        this.after_effcts.effects.setUniform1f("u_Timer", value);
     }
     static constructEnvironment(environment) {
         return environment
